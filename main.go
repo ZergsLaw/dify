@@ -89,7 +89,7 @@ func (a *api) handler(w http.ResponseWriter, r *http.Request) {
 	defer a.c.Unlock()
 
 	k := key{conversationID: req.ConversationId, userID: req.LeadId}
-	if _, ok := a.c.m[k]; ok {
+	if _, ok := a.c.m[k]; !ok {
 		v := &value{
 			Mutex:    sync.Mutex{},
 			requests: []request{req},
@@ -206,9 +206,8 @@ func (a *api) do(ctx context.Context, v *value) {
 
 func main() {
 	log := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
-		AddSource:   true,
-		Level:       slog.LevelInfo,
-		ReplaceAttr: nil,
+		AddSource: true,
+		Level:     slog.LevelInfo,
 	}))
 
 	c := &cache{m: make(map[key]*value)}

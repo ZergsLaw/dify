@@ -132,7 +132,7 @@ func (a *api) process(ctx context.Context) {
 			for k, v := range a.c.m {
 				v.Lock()
 				v.Unlock()
-				if time.Since(v.t) > time.Second*5 {
+				if time.Since(v.t) > time.Second*10 {
 					a.do(ctx, v)
 					delete(a.c.m, k)
 				}
@@ -147,7 +147,7 @@ func (a *api) do(ctx context.Context, v *value) {
 	var msg string
 
 	for _, req := range v.requests {
-		msg += req.Message
+		msg += req.Message + "\n"
 	}
 
 	r := v.requests[0]
@@ -169,7 +169,14 @@ func (a *api) do(ctx context.Context, v *value) {
 
 	a.log.Info("response received", slog.String("response", res.Answer))
 
-	buf, err := json.Marshal(res)
+	buf, err := json.Marshal(AMOMsg{
+		ChatId:         r.ChatId,
+		LeadId:         r.LeadId,
+		TalkId:         r.TalkId,
+		ContactId:      r.ContactId,
+		Answer:         res.Answer,
+		ConversationId: r.ConversationId,
+	})
 	if err != nil {
 		a.log.Error("error encoding response", slog.String("error", err.Error()))
 
@@ -177,7 +184,7 @@ func (a *api) do(ctx context.Context, v *value) {
 	}
 
 	buffer := bytes.NewBuffer(buf)
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "http://localhost:8080", buffer)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://dev.includecrm.ru/guyfullin/difyai/to_amo.php", buffer)
 	if err != nil {
 		a.log.Error("error creating request", slog.String("error", err.Error()))
 
@@ -211,7 +218,7 @@ func main() {
 	}))
 
 	c := &cache{m: make(map[key]*value)}
-	d := dify.NewClient("https://api.dify.ai/v1", "app-LOzxzDj52W9npfQp8bLImoKJ")
+	d := dify.NewClient("https://api.dify.ai", "app-LOzxzDj52W9npfQp8bLImoKJ")
 
 	a := &api{
 		c:    c,

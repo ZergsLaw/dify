@@ -175,7 +175,7 @@ func (a *api) do(ctx context.Context, v *value) {
 		TalkId:         r.TalkId,
 		ContactId:      r.ContactId,
 		Answer:         res.Answer,
-		ConversationId: r.ConversationId,
+		ConversationId: res.ConversationID,
 	})
 	if err != nil {
 		a.log.Error("error encoding response", slog.String("error", err.Error()))

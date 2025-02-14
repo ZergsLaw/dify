@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -149,6 +150,8 @@ func (a *api) do(ctx context.Context, v *value) {
 	for _, req := range v.requests {
 		msg += req.Message + " "
 	}
+
+	msg = strings.Replace(msg, "\n", " ", -1)
 
 	r := v.requests[0]
 

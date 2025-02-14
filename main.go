@@ -78,8 +78,16 @@ func (a *api) ServeHTTP(writer http.ResponseWriter, r *http.Request) {
 func (a *api) handler(w http.ResponseWriter, r *http.Request) {
 	a.log.Info("request received", slog.String("method", r.Method), slog.String("url", r.URL.String()))
 
+	js, err := io.ReadAll(r.Body)
+	if err != nil {
+		a.log.Error("error reading request", slog.String("error", err.Error()))
+		a.error(w, err)
+
+		return
+	}
+
 	var req request
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err := json.Unmarshal(js, &req); err != nil {
 		a.log.Error("error decoding request", slog.String("error", err.Error()))
 		a.error(w, err)
 

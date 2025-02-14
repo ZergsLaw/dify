@@ -147,7 +147,7 @@ func (a *api) do(ctx context.Context, v *value) {
 	var msg string
 
 	for _, req := range v.requests {
-		msg += req.Message + "\n"
+		msg += req.Message + " "
 	}
 
 	r := v.requests[0]

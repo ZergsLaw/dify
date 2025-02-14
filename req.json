@@ -1,5 +1,5 @@
 {
-  "time": "2025-02-14T15:59:59.807561876Z",
+  "time": "2025-02-14T16:21:32.211813275Z",
   "level": "INFO",
   "source": {
     "function": "main.(*api).handler",
@@ -9,5 +9,5 @@
   "msg": "request received",
   "method": "POST",
   "url": "/",
-  "body": "{\n      \"chat_id\": \"88d04e24-b822-4ec2-9bbe-cd2d5a8a9869\",\n      \"lead_id\": 20620917,\n      \"talk_id\": 16926,\n      \"contact_id\": 24755355,\n      \"message\": \"150000\n\nДолларов\",\n      \"conversation_id\": \"bca33fff-b8b2-4c6f-b0e2-7a929295b3be\",\n      \"tag\": \"\"\n    }"
+  "body": "{\n      \"chat_id\": \"6e79405a-3bcb-4bc0-9828-c830ea83617a\",\n      \"lead_id\": 20622119,\n      \"talk_id\": 16930,\n      \"contact_id\": 24755327,\n      \"message\": \"Which one has a higher ROI?\",\n      \"conversation_id\": \"58f909e6-b40e-4c75-bff8-c5a53addab96\",\n      \"tag\": \"\"\n    }"
 }

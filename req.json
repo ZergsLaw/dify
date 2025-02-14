@@ -1,0 +1,13 @@
+{
+  "time": "2025-02-14T15:59:59.807561876Z",
+  "level": "INFO",
+  "source": {
+    "function": "main.(*api).handler",
+    "file": "/workspace/main.go",
+    "line": 88
+  },
+  "msg": "request received",
+  "method": "POST",
+  "url": "/",
+  "body": "{\n      \"chat_id\": \"88d04e24-b822-4ec2-9bbe-cd2d5a8a9869\",\n      \"lead_id\": 20620917,\n      \"talk_id\": 16926,\n      \"contact_id\": 24755355,\n      \"message\": \"150000\n\nДолларов\",\n      \"conversation_id\": \"bca33fff-b8b2-4c6f-b0e2-7a929295b3be\",\n      \"tag\": \"\"\n    }"
+}

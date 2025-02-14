@@ -87,8 +87,10 @@ func (a *api) handler(w http.ResponseWriter, r *http.Request) {
 
 	a.log.Info("request received", slog.String("method", r.Method), slog.String("url", r.URL.String()), slog.String("body", string(js)))
 
+	convertedJS := strings.ReplaceAll(string(js), "\n", " ")
+
 	var req request
-	if err := json.Unmarshal(js, &req); err != nil {
+	if err := json.Unmarshal([]byte(convertedJS), &req); err != nil {
 		a.log.Error("error decoding request", slog.String("error", err.Error()))
 		a.error(w, err)
 

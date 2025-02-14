@@ -76,7 +76,6 @@ func (a *api) ServeHTTP(writer http.ResponseWriter, r *http.Request) {
 }
 
 func (a *api) handler(w http.ResponseWriter, r *http.Request) {
-	a.log.Info("request received", slog.String("method", r.Method), slog.String("url", r.URL.String()))
 
 	js, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -85,6 +84,8 @@ func (a *api) handler(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+
+	a.log.Info("request received", slog.String("method", r.Method), slog.String("url", r.URL.String()), slog.String("body", string(js)))
 
 	var req request
 	if err := json.Unmarshal(js, &req); err != nil {

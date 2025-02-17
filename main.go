@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -145,7 +146,12 @@ func (a *api) process(ctx context.Context) {
 				v.Lock()
 				v.Unlock()
 				if time.Since(v.t) > time.Second*10 {
-					a.do(ctx, v)
+					err := a.do(ctx, v)
+					if err != nil {
+						a.log.Error("error processing request", slog.String("error", err.Error()))
+
+						continue
+					}
 					delete(a.c.m, k)
 				}
 
@@ -155,7 +161,7 @@ func (a *api) process(ctx context.Context) {
 	}
 }
 
-func (a *api) do(ctx context.Context, v *value) {
+func (a *api) do(ctx context.Context, v *value) error {
 	var msg string
 
 	for _, req := range v.requests {
@@ -176,9 +182,7 @@ func (a *api) do(ctx context.Context, v *value) {
 		User:           strconv.Itoa(r.LeadId),
 	})
 	if err != nil {
-		a.log.Error("error sending request", slog.String("error", err.Error()))
-
-		return
+		return fmt.Errorf("a.dify.API().ChatMessages: %w", err)
 	}
 
 	a.log.Info("response received", slog.String("response", res.Answer))
@@ -192,37 +196,31 @@ func (a *api) do(ctx context.Context, v *value) {
 		ConversationId: res.ConversationID,
 	})
 	if err != nil {
-		a.log.Error("error encoding response", slog.String("error", err.Error()))
-
-		return
+		return fmt.Errorf("json.Marshal: %w", err)
 	}
 
 	buffer := bytes.NewBuffer(buf)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://dev.includecrm.ru/guyfullin/difyai/to_amo.php", buffer)
 	if err != nil {
-		a.log.Error("error creating request", slog.String("error", err.Error()))
-
-		return
+		return fmt.Errorf("http.NewRequestWithContext: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := a.http.Do(req)
 	if err != nil {
-		a.log.Error("error sending response", slog.String("error", err.Error()))
-
-		return
+		return fmt.Errorf("a.http.Do: %w", err)
 	}
 	defer resp.Body.Close()
 
 	responseMsg, err := io.ReadAll(resp.Body)
 	if err != nil {
-		a.log.Error("error reading response", slog.String("error", err.Error()))
-
-		return
+		return fmt.Errorf("io.ReadAll: %w", err)
 	}
 
 	a.log.Info("response sent", slog.String("response", string(responseMsg)))
+
+	return nil
 }
 
 func main() {

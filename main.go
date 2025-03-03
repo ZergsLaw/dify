@@ -18,17 +18,60 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/cohesion-org/deepseek-go"
+
 	"github.com/ZergsLaw/dify-sdk-go"
 )
 
-//type request struct {
-//	Inputs         map[string]interface{} `json:"inputs"`
-//	Query          string                 `json:"query"`
-//	ResponseMode   string                 `json:"response_mode"`
-//	ConversationId string                 `json:"conversation_id"`
-//	User           string                 `json:"user"`
-//	Files          json.RawMessage        `json:"files"`
-//}
+const deepSeekSystemPrompt = `
+<person>
+You are an AI Sales Engagement Analyst specializing in real-time conversational intelligence. Your primary mission is to detect authentic buying signals through multimodal pattern recognition, initiating meeting proposals only when 3 strict criteria align.
+</person>
+
+<history>
+%s
+</history>
+
+<core_operating_system>
+### Signal Detection Matrix
+1. **Intent Quadrant Analysis**  
+   - Classify messages across 4 dimensions: Urgency (U), Capability (C), Authority (A), Need (N)  
+   - Calculate UCAN score (0-10 per dimension) using:  
+     • Lexical density (content words/total words ratio)  
+     • Pragmatic markers (e.g., "our team needs", "final decision")  
+     • Temporal pressure indicators (deadlines, fiscal year references)
+
+2. **Conversation Thermodynamics**  
+   - Map dialogue flow through 3 phases:  
+     1. Discovery (Problem Identification) → 2. Solution Matching → 3. Value Quantification  
+   - Measure engagement momentum:  
+     Δ = (Response depth in characters)/(Time since previous message)^1.5
+
+3. **Proposal Gate Criteria**  
+   - Unlock meeting suggestion ONLY when:  
+     a) UCAN score ≥ 7 in 3+ dimensions  
+     b) Conversation crosses phase 2.5 threshold  
+     c) Momentum Δ > 0.85  
+     d) No unresolved objections in last 2 exchanges
+
+### Response Activation Protocol
+- Initiate booking sequence WHEN:  
+  ✔️ User mentions 2+ organizational stakeholders  
+  ✔️ Contains implicit/explicit timeline reference  
+  ✔️ At least 3 solution-specific terms used  
+  ✔️ Message ends with open-ended question
+
+- NEVER interrupt:  
+  ❌ Price negotiations in progress  
+  ❌ Competitor comparisons  
+  ❌ Technical specification requests
+</core_operating_system>
+
+<decision_tree>
+1. IF UCAN_Score ≥ 28 AND Δ > 0.9 → Immediate calendar integration  
+2. IF UCAN_Score 20-27 AND Phase ≥ 2 → Soft proposal ("Would a demo help clarify?")  
+3. ELSE → Continue qualification with Socratic questioning  
+</decision_tree>`
 
 type request struct {
 	ChatId         string `json:"chat_id"`
@@ -66,10 +109,11 @@ type cache struct {
 }
 
 type api struct {
-	c    *cache
-	log  *slog.Logger
-	http *http.Client
-	dify *dify.Client
+	c        *cache
+	log      *slog.Logger
+	http     *http.Client
+	dify     *dify.Client
+	deepseek *deepseek.Client
 }
 
 func (a *api) ServeHTTP(writer http.ResponseWriter, r *http.Request) {
@@ -187,6 +231,18 @@ func (a *api) do(ctx context.Context, v *value) error {
 
 	a.log.Info("response received", slog.String("response", res.Answer))
 
+	messages, err := a.dify.API().Messages(ctx, &dify.MessagesRequest{
+		ConversationID: r.ConversationId,
+		User:           strconv.Itoa(r.LeadId),
+	})
+	if err != nil {
+		return fmt.Errorf("a.dify.API().Messages: %w", err)
+	}
+
+	if err := a.clientIsPrepared(ctx, strconv.Itoa(r.LeadId), messages.Data); err != nil {
+		return fmt.Errorf("a.clientIsPrepared: %w", err)
+	}
+
 	buf, err := json.Marshal(AMOMsg{
 		ChatId:         r.ChatId,
 		LeadId:         r.LeadId,
@@ -223,6 +279,57 @@ func (a *api) do(ctx context.Context, v *value) error {
 	return nil
 }
 
+func (a *api) clientIsPrepared(ctx context.Context, userID string, history []dify.MessagesDataResponse) error {
+	if len(history) == 0 {
+		return nil
+	}
+
+	var dialogue string
+	for i, response := range history {
+		dialogue += fmt.Sprintf("msg: %d, user: %s, ai: %s\n", i+1, response.Query, response.Answer)
+	}
+
+	deepSeekRes, err := a.deepseek.CreateChatCompletion(ctx, &deepseek.ChatCompletionRequest{
+		Model: "deepseek-reasoner",
+		Messages: []deepseek.ChatCompletionMessage{
+			{
+				Role:    "system",
+				Content: fmt.Sprintf(deepSeekSystemPrompt, dialogue),
+			},
+			{
+				Role:    "user",
+				Content: "Detect and return result client is prepared or not by scheme - client is prepared",
+			},
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("a.deepseek.CreateChatCompletion: %w", err)
+	}
+
+	if !strings.Contains(strings.ToLower(deepSeekRes.Choices[0].Message.Content), "client is prepared") {
+		return nil
+	}
+
+	const u = `https://dev.includecrm.ru/guyfullin/difyai/`
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("%s?user_id=%s", u, userID), nil)
+	if err != nil {
+		return fmt.Errorf("http.NewRequestWithContext: %w", err)
+	}
+
+	resp, err := a.http.Do(req)
+	if err != nil {
+		return fmt.Errorf("a.http.Do: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	return nil
+}
+
 func main() {
 	log := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
 		AddSource: true,
@@ -233,10 +340,11 @@ func main() {
 	d := dify.NewClient("https://api.dify.ai", "app-LOzxzDj52W9npfQp8bLImoKJ")
 
 	a := &api{
-		c:    c,
-		log:  log,
-		http: &http.Client{},
-		dify: d,
+		c:        c,
+		log:      log,
+		http:     &http.Client{},
+		dify:     d,
+		deepseek: deepseek.NewClient("sk-f0611df2062a49a29b905c08005c3311"),
 	}
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGHUP, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGABRT, syscall.SIGTERM)

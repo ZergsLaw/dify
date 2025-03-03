@@ -1,2 +1,6 @@
 github.com/ZergsLaw/dify-sdk-go v0.0.0-20250211202422-81ff88243182 h1:9Ow++UwP1kWvDpbEWUlSpkKsUrySd6w+beZ0oyyVoYk=
 github.com/ZergsLaw/dify-sdk-go v0.0.0-20250211202422-81ff88243182/go.mod h1:QXAKmWfGvpj8+2SjnU266jFOeOFFcKIOxtljwzvgx34=
+github.com/cohesion-org/deepseek-go v1.2.4 h1:Dk0aGrBvtIsf9xrhv0ScNLL2hVmnNoaP17009o3mFSo=
+github.com/cohesion-org/deepseek-go v1.2.4/go.mod h1:Mi/tP7IzBoXxDC606CFbJC5Ofk2HCikCayBXweo1RDg=
+github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
+github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=

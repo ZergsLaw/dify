@@ -190,10 +190,10 @@ func (a *api) process(ctx context.Context) {
 				v.Lock()
 				v.Unlock()
 				if time.Since(v.t) > time.Second*10 {
-					err := a.do(ctx, v)
-					if err != nil {
-						a.log.Error("error processing request", slog.String("error", err.Error()))
-					}
+					//err := a.do(ctx, v)
+					//if err != nil {
+					//	a.log.Error("error processing request", slog.String("error", err.Error()))
+					//}
 					delete(a.c.m, k)
 				}
 

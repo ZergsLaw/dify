@@ -193,8 +193,6 @@ func (a *api) process(ctx context.Context) {
 					err := a.do(ctx, v)
 					if err != nil {
 						a.log.Error("error processing request", slog.String("error", err.Error()))
-
-						continue
 					}
 					delete(a.c.m, k)
 				}

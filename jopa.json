@@ -1,0 +1,109 @@
+{
+  "result": [
+    {
+      "metadata": {
+        "_source": "knowledge",
+        "dataset_id": "68840d3b-3b16-457f-aa6b-23d770cb3a32",
+        "dataset_name": "Developers",
+        "document_id": "b8f67ee0-6d75-443c-b332-cffd9afa6b47",
+        "document_name": "Developers.md",
+        "document_data_source_type": "upload_file",
+        "segment_id": "fbca8187-931b-4ff4-888d-0774b8fdc191",
+        "retriever_from": "workflow",
+        "score": 0.335160168,
+        "segment_hit_count": 108,
+        "segment_word_count": 137,
+        "segment_position": 3,
+        "segment_index_node_hash": "f241d8b1b8149584c0cad1a1e4c8a36a1cef01b51bac3cb4955eb4f43c6b2a9b",
+        "doc_metadata": null,
+        "position": 1
+      },
+      "title": "Developers.md",
+      "content": "Are there any environmentally-focused developments?Yes, Ecoverse appears to be an environmentally-oriented development based on its name."
+    },
+    {
+      "metadata": {
+        "_source": "knowledge",
+        "dataset_id": "68840d3b-3b16-457f-aa6b-23d770cb3a32",
+        "dataset_name": "Developers",
+        "document_id": "b8f67ee0-6d75-443c-b332-cffd9afa6b47",
+        "document_name": "Developers.md",
+        "document_data_source_type": "upload_file",
+        "segment_id": "76b2084b-620e-472a-96f1-f9954def3af5",
+        "retriever_from": "workflow",
+        "score": 0.167450178,
+        "segment_hit_count": 96,
+        "segment_word_count": 178,
+        "segment_position": 9,
+        "segment_index_node_hash": "33ad92f8dbad1b9eb9b3089ef534914fbde01397f955abe6037a5e7134c147be",
+        "doc_metadata": null,
+        "position": 2
+      },
+      "title": "Developers.md",
+      "content": "What are the non-residential focused developments listed?Legal Info, Origins, Soul Flow, Icon, Ecoverse, and Unit Space appear to be non-residential focused based on their names."
+    },
+    {
+      "metadata": {
+        "_source": "knowledge",
+        "dataset_id": "b8f47527-2e6b-4597-9fee-9ed3f86eed57",
+        "dataset_name": "Developers info Ecoverse",
+        "document_id": "3fa3cb4f-027e-4e34-a6aa-1d82cb9f133b",
+        "document_name": "Ecoverse.md",
+        "document_data_source_type": "upload_file",
+        "segment_id": "31e3eb6f-d402-4729-8a39-a86d98af5ffc",
+        "retriever_from": "workflow",
+        "score": 0.149079465,
+        "segment_hit_count": 76,
+        "segment_word_count": 400,
+        "segment_position": 5,
+        "segment_index_node_hash": "ebd53e38bc55f7a4e8787d74ff5ebf59e85f556063d41e89e1d6267e8d4bd052",
+        "doc_metadata": null,
+        "position": 3
+      },
+      "title": "Ecoverse.md",
+      "content": "What energy-saving technologies are implemented in Ecoverse?The development features smart home technology, triple water filtration, solar panels, waste collection and recycling, and rainwater irrigation. It includes a Mitsubishi high-efficiency duct ventilation system that uses 50% less electricity than standard systems, plus high-quality insulation and lava stone coating for temperature control."
+    },
+    {
+      "metadata": {
+        "_source": "knowledge",
+        "dataset_id": "68840d3b-3b16-457f-aa6b-23d770cb3a32",
+        "dataset_name": "Developers",
+        "document_id": "b8f67ee0-6d75-443c-b332-cffd9afa6b47",
+        "document_name": "Developers.md",
+        "document_data_source_type": "upload_file",
+        "segment_id": "e26a807d-1a13-4854-9a41-5b1b1c0d3947",
+        "retriever_from": "workflow",
+        "score": 0.137458587,
+        "segment_hit_count": 56,
+        "segment_word_count": 273,
+        "segment_position": 8,
+        "segment_index_node_hash": "e5b94dc317df62e2fb37b34406eea5a19c8f8f9bafaf3386b22075585dd3795b",
+        "doc_metadata": null,
+        "position": 4
+      },
+      "title": "Developers.md",
+      "content": "What percentage of the developments have descriptive names vs. abstract names?About 56% (5/9) have descriptive names (618 The Collection, Ecoverse, The Residence, Unit Space, Legal Info) while 44% (4/9) have abstract or conceptual names (Icon, Kedungu, Origins, Soul Flow)."
+    },
+    {
+      "metadata": {
+        "_source": "knowledge",
+        "dataset_id": "b8f47527-2e6b-4597-9fee-9ed3f86eed57",
+        "dataset_name": "Developers info Ecoverse",
+        "document_id": "3fa3cb4f-027e-4e34-a6aa-1d82cb9f133b",
+        "document_name": "Ecoverse.md",
+        "document_data_source_type": "upload_file",
+        "segment_id": "b35eab4e-03bc-4a38-b0d1-2505077f9665",
+        "retriever_from": "workflow",
+        "score": 0.13577130899999998,
+        "segment_hit_count": 75,
+        "segment_word_count": 215,
+        "segment_position": 1,
+        "segment_index_node_hash": "a608fcc67b35b347648d877b1187f00b51729ea06a479a55fe80f82812a518bd",
+        "doc_metadata": null,
+        "position": 5
+      },
+      "title": "Ecoverse.md",
+      "content": "What is Ecoverse and where is it located?Ecoverse is a premium residential development located at Jl. Pantai Nyanyi, Braban, Kec. Kediri, Kabupaten Tabanan, Bali, Indonesia. It is situated 7 minutes away from Nuanu."
+    }
+  ]
+}

@@ -335,7 +335,7 @@ func main() {
 	}))
 
 	c := &cache{m: make(map[key]*value)}
-	d := dify.NewClient("https://api.dify.ai", "app-LOzxzDj52W9npfQp8bLImoKJ")
+	d := dify.NewClient("https://api.dify.ai", "app-CFH9YU1LLlyK5cQv46GMEOVa")
 
 	a := &api{
 		c:        c,

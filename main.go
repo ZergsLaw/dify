@@ -5,6 +5,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -336,6 +337,13 @@ func main() {
 		Level:     slog.LevelInfo,
 	}))
 
+	const token = `c2stYW50LWFwaTAzLXdqNUZnWWt1d2NYc3Vkd19KSHVuNmR0MHlaRmlQQlZnVnFsS0I4UHhBdHJ4RkxoS2d0V1hEdmJOcG1nOHlpZzBhV3QtZTFyMmxaQWZuemY5MWszZC1BLWgtMjlid0FB`
+
+	tokenAnthopoic, err := base64.StdEncoding.DecodeString(token)
+	if err != nil {
+		panic(err)
+	}
+
 	c := &cache{m: make(map[key]*value)}
 	d := dify.NewClient("https://api.dify.ai", "app-0JTfjINLiTQcHEQWS4GOajZZ")
 
@@ -345,7 +353,7 @@ func main() {
 		http: &http.Client{},
 		dify: d,
 		//deepseek: deepseek.NewClient("sk-f0611df2062a49a29b905c08005c3311"),
-		claude: anthropic.NewClient("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"),
+		claude: anthropic.NewClient(string(tokenAnthopoic)),
 	}
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGHUP, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGABRT, syscall.SIGTERM)

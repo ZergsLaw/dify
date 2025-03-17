@@ -337,15 +337,15 @@ func main() {
 	}))
 
 	c := &cache{m: make(map[key]*value)}
-	d := dify.NewClient("https://api.dify.ai", "app-CFH9YU1LLlyK5cQv46GMEOVa")
+	d := dify.NewClient("https://api.dify.ai", "app-0JTfjINLiTQcHEQWS4GOajZZ")
 
 	a := &api{
-		c:        c,
-		log:      log,
-		http:     &http.Client{},
-		dify:     d,
-		deepseek: deepseek.NewClient("sk-f0611df2062a49a29b905c08005c3311"),
-		claude:   anthropic.NewClient("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"),
+		c:    c,
+		log:  log,
+		http: &http.Client{},
+		dify: d,
+		//deepseek: deepseek.NewClient("sk-f0611df2062a49a29b905c08005c3311"),
+		claude: anthropic.NewClient("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"),
 	}
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGHUP, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGABRT, syscall.SIGTERM)

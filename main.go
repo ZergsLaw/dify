@@ -237,8 +237,13 @@ func (a *api) do(ctx context.Context, v *value) error {
 		return fmt.Errorf("a.dify.API().Messages: %w", err)
 	}
 
-	if err := a.clientIsPrepared(ctx, strconv.Itoa(r.LeadId), messages.Data); err != nil {
+	prepared, err := a.clientIsPrepared(ctx, strconv.Itoa(r.LeadId), messages.Data)
+	if err != nil {
 		return fmt.Errorf("a.clientIsPrepared: %w", err)
+	}
+
+	if prepared {
+		return nil
 	}
 
 	buf, err := json.Marshal(AMOMsg{
@@ -277,9 +282,9 @@ func (a *api) do(ctx context.Context, v *value) error {
 	return nil
 }
 
-func (a *api) clientIsPrepared(ctx context.Context, userID string, history []dify.MessagesDataResponse) error {
+func (a *api) clientIsPrepared(ctx context.Context, userID string, history []dify.MessagesDataResponse) (bool, error) {
 	if len(history) == 0 {
-		return nil
+		return false, nil
 	}
 
 	var dialogue string
@@ -301,31 +306,31 @@ func (a *api) clientIsPrepared(ctx context.Context, userID string, history []dif
 		},
 	})
 	if err != nil {
-		return fmt.Errorf("a.deepseek.CreateChatCompletion: %w", err)
+		return false, fmt.Errorf("a.deepseek.CreateChatCompletion: %w", err)
 	}
 
 	if !strings.Contains(strings.ToLower(deepSeekRes.Choices[0].Message.Content), "client is prepared") {
-		return nil
+		return false, nil
 	}
 
 	const u = `https://dev.includecrm.ru/guyfullin/difyai/`
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("%s?user_id=%s", u, userID), nil)
 	if err != nil {
-		return fmt.Errorf("http.NewRequestWithContext: %w", err)
+		return false, fmt.Errorf("http.NewRequestWithContext: %w", err)
 	}
 
 	resp, err := a.http.Do(req)
 	if err != nil {
-		return fmt.Errorf("a.http.Do: %w", err)
+		return false, fmt.Errorf("a.http.Do: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		return false, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
-	return nil
+	return true, nil
 }
 
 func main() {

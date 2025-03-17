@@ -123,7 +123,6 @@ func (a *api) ServeHTTP(writer http.ResponseWriter, r *http.Request) {
 }
 
 func (a *api) handler(w http.ResponseWriter, r *http.Request) {
-
 	js, err := io.ReadAll(r.Body)
 	if err != nil {
 		a.log.Error("error reading request", slog.String("error", err.Error()))

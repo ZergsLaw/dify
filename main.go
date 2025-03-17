@@ -346,7 +346,7 @@ func main() {
 		http:     &http.Client{},
 		dify:     d,
 		deepseek: deepseek.NewClient("sk-f0611df2062a49a29b905c08005c3311"),
-		claude:   anthropic.NewClient("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"),
+		claude:   anthropic.NewClient("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"),
 	}
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGHUP, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGABRT, syscall.SIGTERM)

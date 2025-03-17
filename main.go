@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/cohesion-org/deepseek-go"
+	"github.com/liushuangls/go-anthropic/v2"
 
 	"github.com/ZergsLaw/dify-sdk-go"
 )
@@ -114,6 +115,7 @@ type api struct {
 	http     *http.Client
 	dify     *dify.Client
 	deepseek *deepseek.Client
+	claude   *anthropic.Client
 }
 
 func (a *api) ServeHTTP(writer http.ResponseWriter, r *http.Request) {
@@ -292,24 +294,20 @@ func (a *api) clientIsPrepared(ctx context.Context, userID string, history []dif
 		dialogue += fmt.Sprintf("msg: %d, user: %s, ai: %s\n", i+1, response.Query, response.Answer)
 	}
 
-	deepSeekRes, err := a.deepseek.CreateChatCompletion(ctx, &deepseek.ChatCompletionRequest{
-		Model: "deepseek-reasoner",
-		Messages: []deepseek.ChatCompletionMessage{
-			{
-				Role:    "system",
-				Content: fmt.Sprintf(deepSeekSystemPrompt, dialogue),
-			},
-			{
-				Role:    "user",
-				Content: "Detect and return result client is prepared or not by scheme - client is prepared",
-			},
+	deepSeekRes, err := a.claude.CreateMessages(ctx, anthropic.MessagesRequest{
+		Model: anthropic.ModelClaude3Dot5Sonnet20241022,
+		MultiSystem: anthropic.NewMultiSystemMessages(
+			fmt.Sprintf(deepSeekSystemPrompt, dialogue),
+		),
+		Messages: []anthropic.Message{
+			anthropic.NewUserTextMessage("Detect and return result client is prepared or not by scheme - client is prepared"),
 		},
 	})
 	if err != nil {
 		return false, fmt.Errorf("a.deepseek.CreateChatCompletion: %w", err)
 	}
 
-	if !strings.Contains(strings.ToLower(deepSeekRes.Choices[0].Message.Content), "client is prepared") {
+	if !strings.Contains(strings.ToLower(deepSeekRes.Content[0].GetText()), "client is prepared") {
 		return false, nil
 	}
 
@@ -348,6 +346,7 @@ func main() {
 		http:     &http.Client{},
 		dify:     d,
 		deepseek: deepseek.NewClient("sk-f0611df2062a49a29b905c08005c3311"),
+		claude:   anthropic.NewClient("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"),
 	}
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGHUP, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGABRT, syscall.SIGTERM)

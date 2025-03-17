@@ -10,4 +10,5 @@ require (
 	github.com/ZergsLaw/dify-sdk-go v0.0.0-20250211202422-81ff88243182 // indirect
 	github.com/cohesion-org/deepseek-go v1.2.4 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
+	github.com/liushuangls/go-anthropic/v2 v2.14.1 // indirect
 )

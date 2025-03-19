@@ -302,6 +302,7 @@ func (a *api) clientIsPrepared(ctx context.Context, userID string, history []dif
 		Messages: []anthropic.Message{
 			anthropic.NewUserTextMessage("Detect and return result client is prepared or not by scheme - client is prepared"),
 		},
+		MaxTokens: 100,
 	})
 	if err != nil {
 		return false, fmt.Errorf("a.deepseek.CreateChatCompletion: %w", err)
@@ -345,7 +346,7 @@ func main() {
 	}
 
 	c := &cache{m: make(map[key]*value)}
-	d := dify.NewClient("https://api.dify.ai", "app-0JTfjINLiTQcHEQWS4GOajZZ")
+	d := dify.NewClient("https://api.dify.ai", "app-tmQVvWxFW8515uAlzcTnFZkm")
 
 	a := &api{
 		c:    c,

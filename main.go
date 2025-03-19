@@ -231,21 +231,23 @@ func (a *api) do(ctx context.Context, v *value) error {
 
 	a.log.Info("response received", slog.String("response", res.Answer))
 
-	messages, err := a.dify.API().Messages(ctx, &dify.MessagesRequest{
-		ConversationID: r.ConversationId,
-		User:           strconv.Itoa(r.LeadId),
-	})
-	if err != nil {
-		return fmt.Errorf("a.dify.API().Messages: %w", err)
-	}
+	if r.ConversationId != "" {
+		messages, err := a.dify.API().Messages(ctx, &dify.MessagesRequest{
+			ConversationID: r.ConversationId,
+			User:           strconv.Itoa(r.LeadId),
+		})
+		if err != nil {
+			return fmt.Errorf("a.dify.API().Messages: %w", err)
+		}
 
-	prepared, err := a.clientIsPrepared(ctx, strconv.Itoa(r.LeadId), messages.Data)
-	if err != nil {
-		return fmt.Errorf("a.clientIsPrepared: %w", err)
-	}
+		prepared, err := a.clientIsPrepared(ctx, strconv.Itoa(r.LeadId), messages.Data)
+		if err != nil {
+			return fmt.Errorf("a.clientIsPrepared: %w", err)
+		}
 
-	if prepared {
-		return nil
+		if prepared {
+			return nil
+		}
 	}
 
 	buf, err := json.Marshal(AMOMsg{

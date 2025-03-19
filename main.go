@@ -191,7 +191,7 @@ func (a *api) process(ctx context.Context) {
 			for k, v := range a.c.m {
 				v.Lock()
 				v.Unlock()
-				if time.Since(v.t) > time.Second*10 {
+				if time.Since(v.t) > time.Second*3 {
 					err := a.do(ctx, v)
 					if err != nil {
 						a.log.Error("error processing request", slog.String("error", err.Error()))

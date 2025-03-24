@@ -144,6 +144,13 @@ func (a *api) handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.Message == "Send me presentation" {
+		a.log.Info("ignoring message")
+		w.WriteHeader(http.StatusNoContent)
+
+		return
+	}
+
 	a.c.Lock()
 	defer a.c.Unlock()
 

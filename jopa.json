@@ -1,7 +1,0 @@
-[
-  {
-    "code": "invalid_param",
-    "message": "Run failed: node:internal/modules/cjs/loader:1207:32)\n    at Module._load (node:internal/modules/cjs/loader:1023:12) {\n  code: 'ERR_DLOPEN_FAILED'\n}\n\nNode.js v20.11.1\nf8-4650-b5a1-1e2d802cbd21/var/sandbox/sandbox-nodejs/nodejs-project/node_temp/node_temp/node_modules/koffi/build/koffi/linux_x64/koffi.node: cannot enable executable stack as shared object requires: Invalid argument\n    at Module._extensions..node (node:internal/modules/cjs/loader:1473:18)\n    at Module.load (node:internal/modules/cjs/loader:1207:32)\n    at Module._load (node:internal/modules/cjs/loader:1023:12)\n    at Module.require (node:internal/modules/cjs/loader:1235:19)\n    at require (node:internal/modules/helpers:176:18)\n    at Object.<anonymous> (/tmp/sandbox-c142062d-95f8-4650-b5a1-1e2d802cbd21/var/sandbox/sandbox-nodejs/nodejs-project/node_temp/node_temp/node_modules/koffi/index.js:542:33)\n    at Module._compile (node:internal/modules/cjs/loader:1376:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1435:10)\n    at Module.load (node:internal/modules/cjs/loader:1207:32)\n    at Module._load (node:internal/modules/cjs/loader:1023:12) {\n  code: 'ERR_DLOPEN_FAILED'\n}\n\nNode.js v20.11.1\nerror: exit status 1\n",
-    "status": 400
-  }
-]

@@ -144,7 +144,7 @@ func (a *api) handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.Message == "Send me presentation" {
+	if req.Message == "Yes" {
 		a.log.Info("ignoring message")
 		w.WriteHeader(http.StatusNoContent)
 

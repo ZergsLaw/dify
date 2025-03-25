@@ -144,13 +144,6 @@ func (a *api) handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.Message == "Yes" {
-		a.log.Info("ignoring message")
-		w.WriteHeader(http.StatusNoContent)
-
-		return
-	}
-
 	a.c.Lock()
 	defer a.c.Unlock()
 

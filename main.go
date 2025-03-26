@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/signal"
@@ -216,17 +217,22 @@ func (a *api) do(ctx context.Context, v *value) error {
 
 	r := v.requests[0]
 
-	res, err := a.dify.API().ChatMessages(ctx, &dify.ChatMessageRequest{
-		Inputs: map[string]interface{}{
-			"tag": r.Tag,
-		},
-		Query:          msg,
-		ResponseMode:   "blocking",
-		ConversationID: r.ConversationId,
-		User:           strconv.Itoa(r.LeadId),
+	var res *dify.ChatMessageResponse
+	err := withRetry(ctx, a.log, "dify.ChatMessages", 3, func() error {
+		var err error
+		res, err = a.dify.API().ChatMessages(ctx, &dify.ChatMessageRequest{
+			Inputs: map[string]interface{}{
+				"tag": r.Tag,
+			},
+			Query:          msg,
+			ResponseMode:   "blocking",
+			ConversationID: r.ConversationId,
+			User:           strconv.Itoa(r.LeadId),
+		})
+		return err
 	})
 	if err != nil {
-		return fmt.Errorf("a.dify.API().ChatMessages: %w", err)
+		return fmt.Errorf("dify.ChatMessages: %w", err)
 	}
 
 	a.log.Info("response received", slog.String("response", res.Answer))
@@ -296,34 +302,44 @@ func (a *api) clientIsPrepared(ctx context.Context, userID string, history []dif
 		dialogue += fmt.Sprintf("msg: %d, user: %s, ai: %s\n", i+1, response.Query, response.Answer)
 	}
 
-	deepSeekRes, err := a.claude.CreateMessages(ctx, anthropic.MessagesRequest{
-		Model: anthropic.ModelClaude3Dot5Sonnet20241022,
-		MultiSystem: anthropic.NewMultiSystemMessages(
-			fmt.Sprintf(deepSeekSystemPrompt, dialogue),
-		),
-		Messages: []anthropic.Message{
-			anthropic.NewUserTextMessage("Detect and return result client is prepared or not by scheme - client is prepared"),
-		},
-		MaxTokens: 100,
+	var deepSeekRes anthropic.MessagesResponse
+	err := withRetry(ctx, a.log, "claude.CreateMessages", 3, func() error {
+		var err error
+		deepSeekRes, err = a.claude.CreateMessages(ctx, anthropic.MessagesRequest{
+			Model: anthropic.ModelClaude3Dot5Sonnet20241022,
+			MultiSystem: anthropic.NewMultiSystemMessages(
+				fmt.Sprintf(deepSeekSystemPrompt, dialogue),
+			),
+			Messages: []anthropic.Message{
+				anthropic.NewUserTextMessage("Detect and return result client is prepared or not by scheme - client is prepared"),
+			},
+			MaxTokens: 100,
+		})
+		return err
 	})
 	if err != nil {
-		return false, fmt.Errorf("a.deepseek.CreateChatCompletion: %w", err)
+		return false, fmt.Errorf("claude.CreateMessages: %w", err)
 	}
 
 	if !strings.Contains(strings.ToLower(deepSeekRes.Content[0].GetText()), "client is prepared") {
 		return false, nil
 	}
 
+	// HTTP request to backend - also add retry
 	const u = `https://dev.includecrm.ru/guyfullin/difyai/`
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("%s?user_id=%s", u, userID), nil)
+	var resp *http.Response
+	err = withRetry(ctx, a.log, "http.Get", 3, func() error {
+		var err error
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("%s?user_id=%s", u, userID), nil)
+		if err != nil {
+			return err
+		}
+		resp, err = a.http.Do(req)
+		return err
+	})
 	if err != nil {
-		return false, fmt.Errorf("http.NewRequestWithContext: %w", err)
-	}
-
-	resp, err := a.http.Do(req)
-	if err != nil {
-		return false, fmt.Errorf("a.http.Do: %w", err)
+		return false, fmt.Errorf("http request: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -393,4 +409,40 @@ func (a *api) forceShutdown(ctx context.Context) {
 
 	a.log.Error("failed to graceful shutdown")
 	os.Exit(2)
+}
+
+// Add this utility function for retries
+func withRetry(ctx context.Context, log *slog.Logger, operation string, maxAttempts int, fn func() error) error {
+	var err error
+
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		err = fn()
+		if err == nil {
+			return nil
+		}
+
+		if attempt == maxAttempts {
+			return fmt.Errorf("%s: all %d attempts failed: %w", operation, maxAttempts, err)
+		}
+
+		// Calculate backoff delay with exponential increase and some jitter
+		backoff := time.Duration(100*attempt*attempt) * time.Millisecond
+		jitter := time.Duration(rand.Intn(100)) * time.Millisecond
+		delay := backoff + jitter
+
+		log.Warn("operation failed, retrying",
+			slog.String("operation", operation),
+			slog.Int("attempt", attempt),
+			slog.String("error", err.Error()),
+			slog.String("next_retry_in", delay.String()))
+
+		select {
+		case <-time.After(delay):
+			// Continue to next attempt
+		case <-ctx.Done():
+			return fmt.Errorf("%s: context canceled during retry: %w", operation, ctx.Err())
+		}
+	}
+
+	return err
 }

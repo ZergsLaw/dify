@@ -1,6 +1,0 @@
-flowchart LR
-    Q[User Query] --> DB[Vector Database]
-    DB --> LLM1[LLM Model]
-    LLM1 --> C[Censor LLM]
-    C --> |Approved| R[Final Result]
-    C --> |Rejected| LLM1

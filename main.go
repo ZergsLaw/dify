@@ -26,55 +26,7 @@ import (
 	"github.com/ZergsLaw/dify-sdk-go"
 )
 
-const deepSeekSystemPrompt = `
-<person>
-You are an AI Sales Engagement Analyst specializing in real-time conversational intelligence. Your primary mission is to detect authentic buying signals through multimodal pattern recognition, initiating meeting proposals only when 3 strict criteria align.
-</person>
-
-<history>
-%s
-</history>
-
-<core_operating_system>
-### Signal Detection Matrix
-1. **Intent Quadrant Analysis**  
-   - Classify messages across 4 dimensions: Urgency (U), Capability (C), Authority (A), Need (N)  
-   - Calculate UCAN score (0-10 per dimension) using:  
-     • Lexical density (content words/total words ratio)  
-     • Pragmatic markers (e.g., "our team needs", "final decision")  
-     • Temporal pressure indicators (deadlines, fiscal year references)
-
-2. **Conversation Thermodynamics**  
-   - Map dialogue flow through 3 phases:  
-     1. Discovery (Problem Identification) → 2. Solution Matching → 3. Value Quantification  
-   - Measure engagement momentum:  
-     Δ = (Response depth in characters)/(Time since previous message)^1.5
-
-3. **Proposal Gate Criteria**  
-   - Unlock meeting suggestion ONLY when:  
-     a) UCAN score ≥ 7 in 3+ dimensions  
-     b) Conversation crosses phase 2.5 threshold  
-     c) Momentum Δ > 0.85  
-     d) No unresolved objections in last 2 exchanges
-
-### Response Activation Protocol
-- Initiate booking sequence WHEN:  
-  ✔️ User mentions 2+ organizational stakeholders  
-  ✔️ Contains implicit/explicit timeline reference  
-  ✔️ At least 3 solution-specific terms used  
-  ✔️ Message ends with open-ended question
-
-- NEVER interrupt:  
-  ❌ Price negotiations in progress  
-  ❌ Competitor comparisons  
-  ❌ Technical specification requests
-</core_operating_system>
-
-<decision_tree>
-1. IF UCAN_Score ≥ 28 AND Δ > 0.9 → Immediate calendar integration  
-2. IF UCAN_Score 20-27 AND Phase ≥ 2 → Soft proposal ("Would a demo help clarify?")  
-3. ELSE → Continue qualification with Socratic questioning  
-</decision_tree>`
+const deepSeekSystemPrompt = "<system>\n    <role>You are an AI assistant specialized in analyzing sales dialogues.</role>\n\n    <objective>Your primary task is to analyze the provided dialogue history between a user (potential property buyer) and an AI sales agent. Your goal is to determine if the user has explicitly and unambiguously agreed to a proposed call or meeting with a human agent.</objective>\n\n    <input_format>\n        You will receive the dialogue history enclosed within `<history>` tags. The content inside these tags is a single string. This string contains the conversation history, with each turn formatted as follows:\n        `msg: [message_number], user: [user's message text], ai: [AI agent's message text]`\n        Each turn is separated by a newline character (`\\n`).\n    </input_format>\n\n    <analysis_instructions>\n        1.  **Read Carefully:** Process the *entire* dialogue string provided within the `<history>` tag. Pay attention to the flow of conversation and the roles (`user:` vs `ai:`).\n        2.  **Identify Proposal:** Locate message(s) from the AI agent (`ai:`) that contain a proposal for a synchronous communication channel (e.g., phone call, meeting, video call) to discuss the property purchase further.\n        3.  **Analyze User Response:** Focus specifically on the user's message(s) (`user:`) that immediately follow the AI's proposal.\n        4.  **Evaluate Intent (Strictly):** Your core function is to evaluate the user's intention based *only* on explicit, unambiguous confirmation. Do not infer agreement.\n        5.  **Decision Criteria:** Apply the following rules strictly:\n            <criteria_true>\n                Set the result to `true` **ONLY IF** the user gives clear, direct, and explicit confirmation of their agreement to the specific call/meeting proposed. Examples include (but are not limited to, across any language):\n                *   Direct affirmations: \"Yes\", \"Okay\", \"Agreed\", \"I confirm\", \"Let's schedule it\", \"Sounds good\", \"Yes, let's talk\".\n                *   Explicit confirmation of a proposed time/date or proposing a concrete alternative time/date and confirming availability: \"Yes, 2 PM works\", \"Okay, booked for Tuesday\", \"I can do Friday at 10 AM, let's do that\".\n            </criteria_true>\n            <criteria_false>\n                Set the result to `false` **in ALL other scenarios**. This includes (but is not limited to, across any language):\n                *   Direct refusals: \"No\", \"I can't\", \"Not interested\", \"Not now\".\n                *   Evasive or non-committal replies: \"I'll think about it\", \"Maybe\", \"Perhaps later\", \"Let me check\".\n                *   **Crucially: Any clarifying questions asked by the user *without* also providing explicit confirmation.** Examples: \"When?\", \"Where?\", \"How long?\", \"What will we discuss?\", \"Is morning okay?\". These questions alone signify the user is still evaluating and has *not* agreed.\n                *   Ignoring the proposal or changing the topic.\n                *   Expressing doubts, conditions, or uncertainty: \"Only if...\", \"I might...\", \"I'm not sure yet\".\n                *   Cancelling or expressing hesitation about a previously potentially agreed-upon arrangement within the provided history.\n            </criteria_false>\n        6.  **Context and Final Decision:** Consider the full dialogue. If there are multiple proposals or if the user changes their mind, base your final determination on the user's *last relevant statement* concerning the *most recent proposal* for a call/meeting found in the history.\n        7.  **Default to False:** If, after careful analysis, the user's intention regarding explicit agreement remains ambiguous or unclear for any reason, you MUST default the result to `false`.\n    </analysis_instructions>\n\n    <language_note>\n        The dialogue may occur in **any language**. You must perform the analysis based on the *semantic meaning and intent* of the user's response concerning explicit confirmation. Recognize universal patterns of agreement and refusal, rather than relying solely on keywords from a single language.\n    </language_note>\n\n    <output_specification>\n        **CRITICAL:** Your entire output MUST be a single JSON object and nothing else.\n        *   If the user has explicitly agreed according to the criteria: `{\"client_is_prepared\": true}`\n        *   If the user has NOT explicitly agreed (including ambiguity): `{\"client_is_prepared\": false}`\n\n        **Do not include any introductory text, explanations, summaries, apologies, or any characters outside of the required JSON object.**\n    </output_specification>\n</system>"
 
 type request struct {
 	ChatId         string `json:"chat_id"`
@@ -308,10 +260,10 @@ func (a *api) clientIsPrepared(ctx context.Context, userID string, history []dif
 		deepSeekRes, err = a.claude.CreateMessages(ctx, anthropic.MessagesRequest{
 			Model: anthropic.ModelClaude3Dot5Sonnet20241022,
 			MultiSystem: anthropic.NewMultiSystemMessages(
-				fmt.Sprintf(deepSeekSystemPrompt, dialogue),
+				deepSeekSystemPrompt,
 			),
 			Messages: []anthropic.Message{
-				anthropic.NewUserTextMessage("Detect and return result client is prepared or not by scheme - client is prepared"),
+				anthropic.NewUserTextMessage("<history>" + dialogue + "</history>"),
 			},
 			MaxTokens: 100,
 		})
@@ -320,6 +272,8 @@ func (a *api) clientIsPrepared(ctx context.Context, userID string, history []dif
 	if err != nil {
 		return false, fmt.Errorf("claude.CreateMessages: %w", err)
 	}
+
+	// { "client_is_prepared": true }
 
 	if !strings.Contains(strings.ToLower(deepSeekRes.Content[0].GetText()), "client is prepared") {
 		return false, nil

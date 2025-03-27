@@ -275,11 +275,15 @@ func (a *api) clientIsPrepared(ctx context.Context, userID string, history []dif
 
 	// { "client_is_prepared": true }
 
-	//var jsonRes struct {
-	//	ClientIsPrepared bool `json:"client_is_prepared"`
-	//}
+	var jsonRes struct {
+		ClientIsPrepared bool `json:"client_is_prepared"`
+	}
 
-	if !strings.Contains(strings.ToLower(deepSeekRes.Content[0].GetText()), "true") {
+	if err := json.Unmarshal([]byte(deepSeekRes.Content[0].GetText()), &jsonRes); err != nil {
+		return false, fmt.Errorf("json.Unmarshal: %w", err)
+	}
+
+	if !jsonRes.ClientIsPrepared {
 		return false, nil
 	}
 

@@ -275,7 +275,11 @@ func (a *api) clientIsPrepared(ctx context.Context, userID string, history []dif
 
 	// { "client_is_prepared": true }
 
-	if !strings.Contains(strings.ToLower(deepSeekRes.Content[0].GetText()), "client is prepared") {
+	//var jsonRes struct {
+	//	ClientIsPrepared bool `json:"client_is_prepared"`
+	//}
+
+	if !strings.Contains(strings.ToLower(deepSeekRes.Content[0].GetText()), "true") {
 		return false, nil
 	}
 
